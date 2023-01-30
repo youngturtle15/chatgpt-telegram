@@ -43,8 +43,11 @@ class ChatGPTChatBot():
 
     async def chatgpt(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         user_query = update.message.text
-        await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=constants.ChatAction.TYPING),
-        response = self.chatbot.ask(user_query)
+        loop = asyncio.get_event_loop()
+        response, _ = await asyncio.gather(
+            loop.run_in_executor(None, self.chatbot.ask, user_query),
+            context.bot.send_chat_action(chat_id=update.effective_chat.id, action=constants.ChatAction.TYPING)
+        )
         response_text = response['message']
         await context.bot.send_message(chat_id=update.effective_chat.id, text=response_text)
         return CHOOSING
